@@ -1,6 +1,10 @@
 package mindcollaps.netConnect.client;
 
-import mindcollaps.client.Controller;
+import com.sun.xml.internal.ws.api.pipe.Engine;
+import javafx.application.Platform;
+import mindcollaps.client.ClientEngine;
+import mindcollaps.client.controller.ChatPrgm;
+import mindcollaps.client.controller.LoginPrgm;
 import mindcollaps.lib.Client;
 import mindcollaps.lib.Message;
 import mindcollaps.utility.UtilityBase;
@@ -8,14 +12,11 @@ import org.json.simple.JSONObject;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
-import java.util.Scanner;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Map.Entry;
 
 public class NetConnectClient {
 
-    private Controller engine;
+    private ClientEngine engine;
     private int port = 5007;
     private String host = "127.0.0.1";
     private Socket socket;
@@ -23,15 +24,15 @@ public class NetConnectClient {
     private PrintWriter writer;
     private BufferedReader reader;
 
-    public NetConnectClient(Controller engine) {
+    public NetConnectClient(ClientEngine engine) {
         this.engine = engine;
     }
 
-    public void connectToServer() {
+    public void connectToServer() throws IOException {
         connect();
     }
 
-    public void connectToServer(String host, int port) {
+    public void connectToServer(String host, int port) throws IOException {
         this.host = host;
         this.port = port;
         connect();
@@ -52,6 +53,15 @@ public class NetConnectClient {
     }
 
     public void handleMessage(String str) {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                NetConnectClient.this.actualHandle(str);
+            }
+        });
+    }
+
+    private void actualHandle(String str){
         System.out.println(str);
         JSONObject ob = UtilityBase.convertStringToJson(str);
         if(ob == null)
@@ -60,7 +70,7 @@ public class NetConnectClient {
         switch (cmd.toLowerCase()) {
             case "message":
                 Message msg = UtilityBase.convertJsonToMessage((JSONObject) ob.get("message"));
-                engine.receiveMessage(msg);
+                engine.getChatPrgm().receiveMessage(msg);
                 break;
 
             case "ping":
@@ -70,11 +80,20 @@ public class NetConnectClient {
             case "client":
                 Client client = UtilityBase.convertJsonToClient((JSONObject) ob.get("client"));
                 this.client = client;
+                engine.getLoginPrgm().receivePassword();
                 break;
 
             case "chat":
                 JSONObject clientJS = (JSONObject) ob.get("client");
-                engine.setupChat((String) clientJS.get("id"), (String) clientJS.get("name"));
+                engine.getChatPrgm().setupChat((String) clientJS.get("id"), (String) clientJS.get("name"));
+                break;
+
+            case "logon":
+                engine.getLoginPrgm().passwordWrong();
+                break;
+
+            case "loggedin":
+                engine.getLoginPrgm().connectionApproved();
                 break;
         }
     }
@@ -92,13 +111,9 @@ public class NetConnectClient {
         writer.println(str);
     }
 
-    private void connect() {
+    private void connect() throws IOException {
         Socket socket = null;
-        try {
-            socket = new Socket(host, port);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        socket = new Socket(host, port);
         if (socket.isConnected())
             System.out.println("Client is connected to " + host + ":" + port);
         else {
@@ -106,11 +121,7 @@ public class NetConnectClient {
             return;
         }
 
-        try {
-            socket.setKeepAlive(true);
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
+        socket.setKeepAlive(true);
         this.socket = socket;
         startMessageListener();
     }
@@ -141,5 +152,21 @@ public class NetConnectClient {
                 }
             }
         }
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
     }
 }

@@ -56,9 +56,8 @@ public class NetConnectServer {
                 engine.checkClient((String) js.get("client"), res);
                 break;
 
-            case "client":
-                Client c = UtilityBase.convertJsonToClient((JSONObject) js.get("client"));
-                engine.updateClient(c, c.getClientId());
+            case "login":
+                engine.loginUser((String) js.get("id"), (String) js.get("name"), (String) js.get("pin"), res);
                 break;
         }
     }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mindcollaps.client.controller.LoginPrgm">
+   <children>
+      <TextField fx:id="serverHost" layoutX="159.0" layoutY="68.0" text="127.0.0.1" />
+      <TextField fx:id="serverPort" layoutX="159.0" layoutY="102.0" text="5007" />
+      <TextField fx:id="userName" layoutX="159.0" layoutY="208.0" />
+      <PasswordField fx:id="userPw" layoutX="159.0" layoutY="255.0" />
+      <Button layoutX="277.0" layoutY="344.0" mnemonicParsing="false" onAction="#onLogin" text="Login" />
+      <Label layoutX="97.0" layoutY="72.0" text="Server" />
+      <Label layoutX="85.0" layoutY="212.0" text="User Name" />
+      <Label layoutX="89.0" layoutY="259.0" text="Password" />
+      <Label layoutX="100.0" layoutY="106.0" text="Port" />
+      <Label fx:id="errorCode" contentDisplay="CENTER" layoutX="119.0" layoutY="313.0" prefHeight="18.0" prefWidth="371.0" textAlignment="CENTER" />
+   </children>
+</AnchorPane>

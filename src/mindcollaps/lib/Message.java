@@ -3,7 +3,7 @@ package mindcollaps.lib;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import mindcollaps.client.Controller;
+import mindcollaps.client.controller.ChatPrgm;
 import org.json.simple.JSONObject;
 
 import java.io.Serializable;
@@ -21,16 +21,18 @@ public class Message implements Serializable {
     private Node messageDisplayed;
     private Label text;
 
-    public Node buildMessage(Controller controller){
+    public Node buildMessage(ChatPrgm chatPrgm){
         if(messageType == MessageType.Text){
             this.messageDisplayed = generateTextChat(content);
         } else if (messageType == MessageType.Delete) {
-            controller.removeMessage(this);
+            chatPrgm.removeMessage(this);
         } else if (messageType == MessageType.Edit){
             text.setText(content);
         } else if (messageType == MessageType.Image){
             //TODO: do it
             System.out.println("THIS ACTION IS NOT DONE YET");
+        } else if(messageType == MessageType.Pending){
+            this.messageDisplayed = generateTextChat("sending...");
         }
         return this.messageDisplayed;
     }
@@ -56,6 +58,9 @@ public class Message implements Serializable {
     }
 
     public void setMessageType(MessageType messageType) {
+        if(this.messageType == MessageType.Pending)
+            if(messageType == MessageType.Text)
+                this.text.setText(content);
         this.messageType = messageType;
     }
 
@@ -103,10 +108,13 @@ public class Message implements Serializable {
         text.setText(chat);
         this.text = text;
         box.getChildren().add(text);
+
+        Label time = new Label(fromDate.getHours() + ":" + fromDate.getMinutes() + ":" + fromDate.getSeconds());
+        box.getChildren().add(time);
         return box;
     }
 
     public enum MessageType{
-        Image, Text, Edit, Delete
+        Image, Text, Edit, Delete, Pending
     }
 }
